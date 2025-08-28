@@ -1,0 +1,7 @@
+/dist
+/release
+/wp-buildkit*
+docs/data/data-raw.yaml
+
+coverage.out
+CHANGELOG.md

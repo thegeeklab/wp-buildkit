@@ -1,0 +1,21 @@
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:1.25.0@sha256:5502b0e56fca23feba76dbc5387ba59c593c02ccc2f0f7355871ea9a0852cebe AS build
+
+ARG TARGETOS
+ARG TARGETARCH
+
+ADD . /src
+WORKDIR /src
+
+RUN make build
+
+FROM moby/buildkit:v0.23.2-rootless
+
+LABEL maintainer="Robert Kaussow <mail@thegeeklab.de>"
+LABEL org.opencontainers.image.authors="Robert Kaussow <mail@thegeeklab.de>"
+LABEL org.opencontainers.image.title="wp-buildkit"
+LABEL org.opencontainers.image.url="https://github.com/thegeeklab/wp-buildkit"
+LABEL org.opencontainers.image.source="https://github.com/thegeeklab/wp-buildkit"
+LABEL org.opencontainers.image.documentation="https://github.com/thegeeklab/wp-buildkit"
+
+COPY --from=build /src/dist/wp-buildkit /bin/wp-buildkit
+ENTRYPOINT ["wp-buildkit"]

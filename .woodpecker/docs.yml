@@ -1,0 +1,81 @@
+---
+when:
+  - event: [pull_request, tag]
+  - event: [push, manual]
+    branch:
+      - ${CI_REPO_DEFAULT_BRANCH}
+
+steps:
+  - name: markdownlint
+    image: quay.io/thegeeklab/markdownlint-cli
+    commands:
+      - markdownlint 'README.md' 'CONTRIBUTING.md'
+
+  - name: spellcheck
+    image: quay.io/thegeeklab/alpine-tools
+    commands:
+      - spellchecker --files 'docs/**/*.md' 'README.md' 'CONTRIBUTING.md' -d .dictionary -p spell indefinite-article syntax-urls
+    environment:
+      FORCE_COLOR: "true"
+
+  - name: link-validation
+    image: docker.io/lycheeverse/lychee
+    commands:
+      - lychee --no-progress --format detailed docs/content README.md
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token_ro
+
+  - name: publish
+    image: quay.io/thegeeklab/wp-git-action
+    depends_on: [markdownlint, spellcheck, link-validation]
+    settings:
+      action:
+        - pages
+      author_email: bot@thegeeklab.de
+      author_name: thegeeklab-bot
+      branch: docs
+      message: "[skip ci] auto-update documentation"
+      netrc_password:
+        from_secret: github_token
+      pages_directory: docs/
+    when:
+      - event: [push, manual]
+        branch:
+          - ${CI_REPO_DEFAULT_BRANCH}
+        status: [success, failure]
+
+  - name: pushrm-dockerhub
+    image: docker.io/chko/docker-pushrm:1
+    depends_on: [markdownlint, spellcheck, link-validation]
+    environment:
+      DOCKER_PASS:
+        from_secret: docker_password
+      DOCKER_USER:
+        from_secret: docker_username
+      PUSHRM_FILE: README.md
+      PUSHRM_SHORT: Woodpecker CI plugin to build multiarch OCI images with buildx
+      PUSHRM_TARGET: ${CI_REPO}
+    when:
+      - event: [push, manual]
+        branch:
+          - ${CI_REPO_DEFAULT_BRANCH}
+        status: [success]
+
+  - name: pushrm-quay
+    image: docker.io/chko/docker-pushrm:1
+    depends_on: [markdownlint, spellcheck, link-validation]
+    environment:
+      APIKEY__QUAY_IO:
+        from_secret: quay_token
+      PUSHRM_FILE: README.md
+      PUSHRM_TARGET: quay.io/${CI_REPO}
+    when:
+      - event: [push, manual]
+        branch:
+          - ${CI_REPO_DEFAULT_BRANCH}
+        status: [success]
+
+depends_on:
+  - build-package
+  - build-container
