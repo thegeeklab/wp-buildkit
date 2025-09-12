@@ -3,7 +3,7 @@ package plugin
 import (
 	"fmt"
 
-	"github.com/thegeeklab/wp-buildkit/docker"
+	"github.com/thegeeklab/wp-buildkit/buildkit"
 	plugin_cli "github.com/thegeeklab/wp-plugin-go/v6/cli"
 	plugin_base "github.com/thegeeklab/wp-plugin-go/v6/plugin"
 	"github.com/urfave/cli/v3"
@@ -23,9 +23,9 @@ type Plugin struct {
 type Settings struct {
 	BuildkitConfig string
 
-	Daemon   docker.Daemon
-	Registry docker.Registry
-	Build    docker.Build
+	Daemon   buildkit.Daemon
+	Registry buildkit.Registry
+	Build    buildkit.Build
 }
 
 func New(e plugin_base.ExecuteFunc, build ...string) *Plugin {

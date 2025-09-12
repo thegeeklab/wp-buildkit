@@ -36,7 +36,7 @@ func WriteDockerConf(path, conf string) error {
 		return fmt.Errorf("%w: %w", errInvalidDockerConfig, err)
 	}
 
-	err = os.WriteFile(path, jsonBytes, strictFilePerm)
+	err = os.WriteFile(path, jsonBytes, 0o600)
 	if err != nil {
 		return err
 	}

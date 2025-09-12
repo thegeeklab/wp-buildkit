@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/thegeeklab/wp-buildkit/docker"
+	"github.com/thegeeklab/wp-buildkit/buildkit"
 	plugin_base "github.com/thegeeklab/wp-plugin-go/v6/plugin"
 )
 
@@ -68,7 +68,7 @@ func TestGenerateLabels(t *testing.T) {
 			name: "all fields populated",
 			plugin: &Plugin{
 				Settings: &Settings{
-					Build: docker.Build{
+					Build: buildkit.Build{
 						Time: "2023-01-01T00:00:00Z",
 						Tags: []string{
 							"v1.0.0",
@@ -95,7 +95,7 @@ func TestGenerateLabels(t *testing.T) {
 			name: "empty repository and commit",
 			plugin: &Plugin{
 				Settings: &Settings{
-					Build: docker.Build{
+					Build: buildkit.Build{
 						Time: "2023-01-01T00:00:00Z",
 						Tags: []string{
 							"v1.0.0",
@@ -112,7 +112,7 @@ func TestGenerateLabels(t *testing.T) {
 			name: "no tags",
 			plugin: &Plugin{
 				Settings: &Settings{
-					Build: docker.Build{
+					Build: buildkit.Build{
 						Time: "2023-01-01T00:00:00Z",
 					},
 				},
