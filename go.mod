@@ -90,6 +90,6 @@ require (
 )
 
 replace (
-	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20250218202821-56aae31c358a
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20251029180050-ab9386a59fda
 	google.golang.org/genproto/googleapis/api => google.golang.org/genproto/googleapis/api v0.0.0-20250218202821-56aae31c358a
 )
