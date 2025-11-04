@@ -68,7 +68,7 @@ func TestGenerateLabels(t *testing.T) {
 			name: "all fields populated",
 			plugin: &Plugin{
 				Settings: &Settings{
-					Build: buildkit.Build{
+					Build: buildkit.BuildData{
 						Time: "2023-01-01T00:00:00Z",
 						Tags: []string{
 							"v1.0.0",
@@ -95,7 +95,7 @@ func TestGenerateLabels(t *testing.T) {
 			name: "empty repository and commit",
 			plugin: &Plugin{
 				Settings: &Settings{
-					Build: buildkit.Build{
+					Build: buildkit.BuildData{
 						Time: "2023-01-01T00:00:00Z",
 						Tags: []string{
 							"v1.0.0",
@@ -112,7 +112,7 @@ func TestGenerateLabels(t *testing.T) {
 			name: "no tags",
 			plugin: &Plugin{
 				Settings: &Settings{
-					Build: buildkit.Build{
+					Build: buildkit.BuildData{
 						Time: "2023-01-01T00:00:00Z",
 					},
 				},

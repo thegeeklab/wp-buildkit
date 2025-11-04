@@ -25,7 +25,7 @@ type Settings struct {
 
 	Daemon   buildkit.Daemon
 	Registry buildkit.Registry
-	Build    buildkit.Build
+	Build    buildkit.BuildData
 }
 
 func New(e plugin_base.ExecuteFunc, build ...string) *Plugin {
@@ -166,13 +166,6 @@ func Flags(settings *Settings, category string) []cli.Flag {
 			Sources:     cli.EnvVars("PLUGIN_BUILDKIT_CONFIG"),
 			Usage:       "content of the docker buildkit toml config",
 			Destination: &settings.BuildkitConfig,
-			Category:    category,
-		},
-		&cli.StringFlag{
-			Name:        "daemon.max-concurrent-uploads",
-			Sources:     cli.EnvVars("PLUGIN_MAX_CONCURRENT_UPLOADS"),
-			Usage:       "max concurrent uploads for each push",
-			Destination: &settings.Daemon.MaxConcurrentUploads,
 			Category:    category,
 		},
 		&cli.StringFlag{

@@ -1,13 +1,66 @@
 package plugin
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
 	"os"
+	"time"
+
+	"github.com/cenkalti/backoff/v5"
 )
 
 var errInvalidDockerConfig = fmt.Errorf("invalid docker config")
+
+const (
+	dialTimeout                  = 1 * time.Second
+	daemonBackoffMaxRetries      = 3
+	daemonBackoffInitialInterval = 2 * time.Second
+	daemonBackoffMultiplier      = 3.5
+)
+
+// waitForSocket waits for a Unix socket to become available.
+func WaitForSocket(ctx context.Context, path string, bfn func(err error, delay time.Duration)) error {
+	// Add initial delay before first attempt
+	select {
+	case <-time.After(daemonBackoffInitialInterval):
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	bf := backoff.NewExponentialBackOff()
+	bf.InitialInterval = daemonBackoffInitialInterval
+	bf.Multiplier = daemonBackoffMultiplier
+
+	bfo := func() (any, error) {
+		if _, err := os.Stat(path); err != nil {
+			return nil, err
+		}
+
+		// Check if the socket is connectable
+		dialer := &net.Dialer{Timeout: dialTimeout}
+
+		conn, err := dialer.DialContext(ctx, "unix", path)
+		if err != nil {
+			return nil, err
+		}
+
+		conn.Close()
+		//nolint:nilnil
+		return nil, nil
+	}
+
+	_, err := backoff.Retry(ctx, bfo,
+		backoff.WithBackOff(bf),
+		backoff.WithMaxTries(daemonBackoffMaxRetries),
+		backoff.WithNotify(bfn))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func GetContainerIP() (string, error) {
 	netInterfaceAddrList, err := net.InterfaceAddrs()

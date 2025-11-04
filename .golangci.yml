@@ -1,7 +1,6 @@
 version: "2"
 run:
   timeout: 5m
-
 linters:
   default: none
   enable:
@@ -80,6 +79,10 @@ linters:
     - wsl_v5
     - zerologlint
   settings:
+    mnd:
+      ignored-numbers:
+        - '0o600'
+        - '0o755'
     ireturn:
       allow:
         - anon
@@ -98,7 +101,6 @@ linters:
       - third_party$
       - builtin$
       - examples$
-
 formatters:
   enable:
     - gofmt

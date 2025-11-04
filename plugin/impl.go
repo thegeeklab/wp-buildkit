@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
-	"github.com/moby/buildkit/client"
 	"github.com/rs/zerolog/log"
+	"github.com/thegeeklab/wp-buildkit/buildkit"
 	plugin_file "github.com/thegeeklab/wp-plugin-go/v6/file"
 	plugin_tag "github.com/thegeeklab/wp-plugin-go/v6/tag"
 )
@@ -49,12 +48,14 @@ func (p *Plugin) Validate() error {
 			}
 		} else {
 			log.Info().Msgf("skip auto-tagging for %s, not on default branch or tag", p.Settings.Build.Ref)
+
 			return nil
 		}
 	}
 
 	if p.Settings.BuildkitConfig != "" {
-		if p.Settings.Daemon.BuildkitConfigFile, err = plugin_file.WriteTmpFile("buildkit.toml", p.Settings.BuildkitConfig); err != nil {
+		p.Settings.Daemon.BuildkitConfigFile, err = plugin_file.WriteTmpFile("buildkit.toml", p.Settings.BuildkitConfig)
+		if err != nil {
 			return fmt.Errorf("error writing buildkit config: %w", err)
 		}
 	}
@@ -70,65 +71,42 @@ func (p *Plugin) Validate() error {
 func (p *Plugin) Execute(ctx context.Context) error {
 	var err error
 
-	if err := p.Settings.Daemon.Start(ctx); err != nil {
-		return err
-	}
-	if err := p.Settings.Daemon.ListBuilder(ctx); err != nil {
-		return err
-	}
-	// if err := p.Settings.Registry.Login(); err != nil {
-	// 	return err
-	// }
+	log.Info().Msg("Starting BuildKit daemon...")
 
-	// Prepare build options
-	solveOpt, err := p.constructSolveOpts()
+	if err := p.Settings.Daemon.Start(); err != nil {
+		return err
+	}
+
+	// Wait for daemon to be ready
+	log.Info().Msg("Waiting for BuildKit daemon to be ready...")
+
+	bfn := func(err error, delay time.Duration) {
+		log.Warn().Msgf("Failed access socket: %v: retry in %s", err, delay.Truncate(time.Second))
+	}
+	if err := WaitForSocket(ctx, p.Settings.Daemon.SocketPath, bfn); err != nil {
+		return fmt.Errorf("buildkitd socket was not ready in time: %w", err)
+	}
+
+	bk, err := buildkit.New(ctx, p.Settings.Build, p.Settings.Daemon.SocketPath, p.Settings.Daemon.Debug)
 	if err != nil {
-		return fmt.Errorf("failed to construct build options: %w", err)
-	}
-
-	if err := p.Settings.Daemon.Build(ctx, solveOpt); err != nil {
 		return err
 	}
+
+	if err := bk.Info(ctx); err != nil {
+		return err
+	}
+
+	if err := p.Settings.Registry.Login(); err != nil {
+		return err
+	}
+
+	log.Info().Msg("Connecting to BuildKit daemon and starting build...")
+
+	if err := bk.Build(ctx); err != nil {
+		return err
+	}
+
+	log.Info().Msg("Build completed successfully!")
 
 	return nil
-}
-
-// constructSolveOpts creates the SolveOpt structure for BuildKit.
-func (p *Plugin) constructSolveOpts() (*client.SolveOpt, error) {
-	repo := p.Settings.Build.Repo
-	tags := p.Settings.Build.Tags
-	var imageNames []string
-
-	for _, tag := range tags {
-		imageNames = append(imageNames, fmt.Sprintf("%s:%s", repo, tag))
-	}
-
-	exports := []client.ExportEntry{
-		{
-			Type: client.ExporterImage,
-			Attrs: map[string]string{
-				"name": strings.Join(imageNames, ","),
-				"push": fmt.Sprintf("%t", p.Settings.Build.Dryrun),
-			},
-		},
-	}
-
-	frontendAttrs := map[string]string{
-		"filename": p.Settings.Build.Containerfile,
-	}
-	if len(p.Settings.Build.Platforms) > 0 {
-		frontendAttrs["platform"] = strings.Join(p.Settings.Build.Platforms, ",")
-	}
-
-	opt := &client.SolveOpt{
-		Exports: exports,
-		LocalDirs: map[string]string{
-			"context":    p.Settings.Build.Context,
-			"dockerfile": p.Settings.Build.Context,
-		},
-		Frontend:      "dockerfile.v0",
-		FrontendAttrs: frontendAttrs,
-	}
-
-	return opt, nil
 }
