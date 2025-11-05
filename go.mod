@@ -6,7 +6,7 @@ require (
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/containerd/platforms v1.0.0-rc.2
 	github.com/docker/cli v28.5.2+incompatible
-	github.com/moby/buildkit v0.25.1
+	github.com/moby/buildkit v0.25.2
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
