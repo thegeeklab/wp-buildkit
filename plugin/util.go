@@ -3,6 +3,7 @@ package plugin
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -11,7 +12,7 @@ import (
 	"github.com/cenkalti/backoff/v5"
 )
 
-var errInvalidDockerConfig = fmt.Errorf("invalid docker config")
+var errInvalidDockerConfig = errors.New("invalid docker config")
 
 const (
 	dialTimeout                  = 1 * time.Second
