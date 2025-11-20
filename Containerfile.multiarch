@@ -8,7 +8,7 @@ WORKDIR /src
 
 RUN make build
 
-FROM moby/buildkit:v0.26.1-rootless@sha256:d5456ed63f604b889ce1ccb7c178e929577f98e77e70ba7827cd8932d3c38fe8
+FROM moby/buildkit:v0.26.2-rootless@sha256:0ffa2fcf6b8757c47d569b3ef0f03f9d5eb3b9ff5ce68d858f994f89b749da0c
 
 LABEL maintainer="Robert Kaussow <mail@thegeeklab.de>"
 LABEL org.opencontainers.image.authors="Robert Kaussow <mail@thegeeklab.de>"
