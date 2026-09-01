@@ -8,7 +8,7 @@ require (
 	github.com/docker/cli v29.0.2+incompatible
 	github.com/moby/buildkit v0.26.1
 	github.com/opencontainers/image-spec v1.1.1
-	github.com/rs/zerolog v1.34.0
+	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
 	github.com/thegeeklab/wp-plugin-go/v6 v6.0.9
 	github.com/urfave/cli/v3 v3.6.1
