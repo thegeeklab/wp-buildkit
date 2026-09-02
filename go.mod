@@ -3,7 +3,7 @@ module github.com/thegeeklab/wp-buildkit
 go 1.25.4
 
 require (
-	github.com/cenkalti/backoff/v5 v5.0.3
+	github.com/cenkalti/backoff/v7 v7.0.0
 	github.com/containerd/platforms v1.0.0-rc.2
 	github.com/docker/cli v29.0.2+incompatible
 	github.com/moby/buildkit v0.26.1
